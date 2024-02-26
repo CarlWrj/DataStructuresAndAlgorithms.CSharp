@@ -368,26 +368,41 @@ namespace DataStructures.Trees.BTrees
                     }
                 }
 
-                //1 左兄弟够借，则将左兄弟的最后一个关键字赋值给父结点，然后将父结点的关键字赋值给自己
-                if (parentChilidIndex - 1 >= 0)
+                //1 左兄弟够借
+                //deleteNodePosition==null表示向上递归合并时不做借兄弟操作
+                if (deleteNodePosition == null && parentChilidIndex - 1 >= 0)
                 {
                     var leftSiblingNode = parentNode.Children[parentChilidIndex - 1];
                     if (leftSiblingNode.Keys.Count >= MinKeyCount + 1)
                     {
-                        deleteNode.Keys[deleteKeyIndex] = parentNode.Keys[parentKeyIndex - 1];
+                        //1 移除删除关键字
+                        deleteNode.Keys.RemoveAt(deleteKeyIndex);
+
+                        //2 然后将父结点的关键字插入到当前结点的第一位
+                        deleteNode.Keys.Insert(0, parentNode.Keys[parentKeyIndex - 1]);
+
+                        //3 最后将左兄弟的最后一个关键字赋值给父结点
                         parentNode.Keys[parentKeyIndex - 1] = leftSiblingNode.Keys[leftSiblingNode.Keys.Count - 1];
                         leftSiblingNode.Keys.RemoveAt(leftSiblingNode.Keys.Count - 1);
+
                         return;
                     }
                 }
 
-                //2 右兄弟够借，则将右兄弟的第一个关键字赋值给父结点，然后将父结点的关键字赋值给自己
-                if (parentChilidIndex + 1 < parentNode.Children.Count)
+                //2 右兄弟够借
+                //deleteNodePosition==null表示向上递归合并时不做借兄弟操作
+                if (deleteNodePosition == null && parentChilidIndex + 1 < parentNode.Children.Count)
                 {
                     var rightSiblingNode = parentNode.Children[parentChilidIndex + 1];
                     if (rightSiblingNode.Keys.Count >= MinKeyCount + 1)
                     {
-                        deleteNode.Keys[deleteKeyIndex] = parentNode.Keys[parentKeyIndex];
+                        //1 移除删除关键字
+                        deleteNode.Keys.RemoveAt(deleteKeyIndex);
+
+                        //2 将父结点的关键字插入到当前结点的最后一位
+                        deleteNode.Keys.Add(parentNode.Keys[parentKeyIndex]);
+
+                        //3 将右兄弟的第一个关键字赋值给父结点
                         parentNode.Keys[parentKeyIndex] = rightSiblingNode.Keys[0];
                         rightSiblingNode.Keys.RemoveAt(0);
                         return;
