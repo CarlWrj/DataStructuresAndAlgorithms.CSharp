@@ -1,11 +1,16 @@
-﻿using System;
+﻿using DataStructures.Trees.BTrees;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 
-namespace DataStructures.Trees.BTrees
+namespace DataStructures.Trees.BPlusTrees
 {
-    public class BTree<T> where T : IComparable<T>
+    /// <summary>
+    /// B+树
+    /// </summary>
+    public class BPlusTree<T> where T : IComparable<T>
     {
         #region 字段和构造函数
         /// <summary>
@@ -31,24 +36,29 @@ namespace DataStructures.Trees.BTrees
         /// <summary>
         /// 根结点
         /// </summary>
-        public BTreeNode<T> Root { get; set; }
+        public BPlusTreeNode<T> Root { get; set; }
+
+        /// <summary>
+        /// 头结点
+        /// </summary>
+        public BPlusTreeNode<T> Head { get; set; }
 
         /// <summary>
         /// 构造函数
         /// </summary>
         /// <param name="degree"></param>
         /// <exception cref="ArgumentException"></exception>
-        public BTree(int degree)
+        public BPlusTree(int degree)
         {
-            if (degree < 4)
+            if (degree < 3)
             {
-                throw new ArgumentException("阶数必须大于3");
+                throw new ArgumentException("阶数必须大于2");
             }
 
             Degree = degree;
-            MaxKeyCount = degree - 1;
+            MaxKeyCount = degree;//B树需要-1，B+树不需要
             var d = (double)degree / 2;
-            MinKeyCount = (int)(Math.Ceiling(d)) - 1;
+            MinKeyCount = (int)(Math.Ceiling(d));//B树是[阶数/2]-1，B+树是[阶数/2]
             MedianIndex = degree / 2;
         }
         #endregion
@@ -59,18 +69,18 @@ namespace DataStructures.Trees.BTrees
         /// </summary>
         /// <param name="value"></param>
         /// <returns></returns>
-        private BTreeNode<T> Find(T value)
+        private BPlusTreeNode<T> Find(T value)
         {
             return Find(Root, value);
         }
 
         /// <summary>
-        /// 查找
+        /// 查找（和B+树的区别：找到不返回而是继续查找）
         /// </summary>
         /// <param name="node"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        private BTreeNode<T> Find(BTreeNode<T> node, T value)
+        private BPlusTreeNode<T> Find(BPlusTreeNode<T> node, T value)
         {
             //如果是叶子结点则不需要再递归查找
             if (node.Children == null || node.Children.Count == 0)
@@ -85,11 +95,11 @@ namespace DataStructures.Trees.BTrees
                 }
             }
 
-            //找到则返回
-            if (node.Keys.Any(p => p.CompareTo(value) == 0))
-            {
-                return node;
-            }
+            //找到不返回而是继续查找
+            //if (node.Keys.Any(p => p.CompareTo(value) == 0))
+            //{
+            //    return node;
+            //}
 
             //递归查找
             var index = node.Keys.ToList().FindLastIndex(p => p.CompareTo(value) < 0) + 1;
@@ -105,8 +115,8 @@ namespace DataStructures.Trees.BTrees
         public void Insert(T value)
         {
             //用于记录分裂情况
-            BTreeNode<T> newLeftNode = null;
-            BTreeNode<T> newRightNode = null;
+            BPlusTreeNode<T> newSmallNode = null;
+            BPlusTreeNode<T> newBigNode = null;
             var finished = false;
 
             //查找值插入到哪个节点中
@@ -114,7 +124,7 @@ namespace DataStructures.Trees.BTrees
             while (insertNode != null && !finished)
             {
                 //插入值到节点中
-                Insert(insertNode, value, newRightNode);
+                Insert(insertNode, value, newSmallNode, newBigNode);
 
                 //没有大于最大键值那么不需要向上分裂，此次插入结束
                 if (insertNode.Keys.Count <= MaxKeyCount)
@@ -127,37 +137,39 @@ namespace DataStructures.Trees.BTrees
                     //中位数为分裂到父结点的关键字
                     value = insertNode.Keys[MedianIndex];
 
-                    //1 中位数右边一位到最后一位，分裂为一个新的右结点
-                    newRightNode = new BTreeNode<T>();
+                    //1 中位数右边一位到最后一位，分裂为一个新的大结点
+                    newBigNode = new BPlusTreeNode<T>();
                     var i = 0;
                     for (i = MedianIndex + 1; i <= MaxKeyCount; i++)
                     {
-                        newRightNode.Keys.Add(insertNode.Keys[i]);
+                        newBigNode.Keys.Add(insertNode.Keys[i]);
                         if (insertNode.Children.Count > i)
                         {
-                            newRightNode.Children.Add(insertNode.Children[i]);
-                            insertNode.Children[i].Parent = newRightNode;
+                            newBigNode.Children.Add(insertNode.Children[i]);
+                            insertNode.Children[i].Parent = newBigNode;
                         }
                     }
-                    if (insertNode.Children.Count > i)
-                    {
-                        newRightNode.Children.Add(insertNode.Children[i]);
-                        insertNode.Children[i].Parent = newRightNode;
-                    }
-                    newRightNode.Parent = insertNode.Parent;
+                    newBigNode.Parent = insertNode.Parent;
 
-                    //2 原结点作为左结点，移除掉分裂出去的所有值
-                    for (i = MedianIndex; i <= MaxKeyCount; i++)
+                    //2 原结点移除掉分裂出去的所有值
+                    for (i = MedianIndex + 1; i <= MaxKeyCount; i++)
                     {
-                        insertNode.Keys.RemoveAt(MedianIndex);
-                        if (insertNode.Children.Count > MedianIndex + 1)
+                        insertNode.Keys.RemoveAt(MedianIndex + 1);
+                        if (insertNode.Children.Count > 0)
                         {
                             insertNode.Children.RemoveAt(MedianIndex + 1);
                         }
                     }
-                    newLeftNode = insertNode;
+                    newSmallNode = insertNode;
 
-                    //3 将中位数插入到父结点中
+                    //3 如果是叶子结点，则更新顺序查找的链表
+                    if (insertNode.Children.Count == 0)
+                    {
+                        newBigNode.Next = newSmallNode.Next;
+                        newSmallNode.Next = newBigNode;
+                    }
+
+                    //4 将中位数插入到父结点中
                     insertNode = insertNode.Parent;
                 }
             }
@@ -165,19 +177,25 @@ namespace DataStructures.Trees.BTrees
             //空树或者根结点已被分裂,需添加根结点
             if (!finished)
             {
-                var newRootNode = new BTreeNode<T>();
+                var newRootNode = new BPlusTreeNode<T>();
                 newRootNode.Keys.Add(value);
-                if (newLeftNode != null)
+                if (newSmallNode != null)
                 {
-                    newRootNode.Children.Add(newLeftNode);
-                    newLeftNode.Parent = newRootNode;
+                    newRootNode.Children.Add(newSmallNode);
+                    newSmallNode.Parent = newRootNode;
                 }
-                if (newRightNode != null)
+                if (newBigNode != null)
                 {
-                    newRootNode.Children.Add(newRightNode);
-                    newRightNode.Parent = newRootNode;
+                    var bigValue = newBigNode.Keys.Max();
+                    newRootNode.Keys.Add(bigValue);
+                    newRootNode.Children.Add(newBigNode);
+                    newBigNode.Parent = newRootNode;
                 }
                 Root = newRootNode;
+                if (Head == null)
+                {
+                    Head = Root;
+                }
             }
         }
 
@@ -186,14 +204,45 @@ namespace DataStructures.Trees.BTrees
         /// </summary>
         /// <param name="node"></param>
         /// <param name="value"></param>
-        private void Insert(BTreeNode<T> node, T value, BTreeNode<T> rightNode)
+        private void Insert(BPlusTreeNode<T> node, T value, BPlusTreeNode<T> smallNode, BPlusTreeNode<T> bigNode)
         {
-            var index = node.Keys.ToList().FindLastIndex(p => p.CompareTo(value) < 0) + 1;
-            node.Keys.Insert(index, value);
-
-            if (rightNode != null)
+            if (smallNode != null && bigNode != null)
             {
-                node.Children.Insert(index + 1, rightNode);
+                var smallNodeKey = smallNode.Keys.Max();
+                //不存在关键字，则插入关键字和子结点
+                var smallIndex = node.Keys.ToList().FindLastIndex(p => p.CompareTo(smallNodeKey) == 0);
+                if (smallIndex == -1)
+                {
+                    smallIndex = node.Keys.ToList().FindLastIndex(p => p.CompareTo(smallNodeKey) < 0) + 1;
+                    node.Keys.Insert(smallIndex, smallNodeKey);
+                    node.Children.Insert(smallIndex, smallNode);
+                }
+                //存在则不插入关键字，只替换子结点
+                else
+                {
+                    node.Children[smallIndex] = smallNode;
+                }
+
+                var bigNodeKey = bigNode.Keys.Max();
+                var bigIndex = node.Keys.ToList().FindLastIndex(p => p.CompareTo(bigNodeKey) == 0);
+                //不存在关键字，则插入关键字和子结点
+                if (bigIndex == -1)
+                {
+                    bigIndex = node.Keys.ToList().FindLastIndex(p => p.CompareTo(bigNodeKey) < 0) + 1;
+                    node.Keys.Insert(bigIndex, bigNodeKey);
+                    node.Children.Insert(bigIndex, bigNode);
+                }
+                //存在则不插入关键字，只替换子结点
+                else
+                {
+                    node.Children[bigIndex] = bigNode;
+                }
+
+            }
+            else
+            {
+                var index = node.Keys.ToList().FindLastIndex(p => p.CompareTo(value) < 0) + 1;
+                node.Keys.Insert(index, value);
             }
         }
 
@@ -203,7 +252,7 @@ namespace DataStructures.Trees.BTrees
         /// <param name="node"></param>
         /// <param name="value"></param>
         /// <returns></returns>
-        private BTreeNode<T> InsertFind(BTreeNode<T> node, T value)
+        private BPlusTreeNode<T> InsertFind(BPlusTreeNode<T> node, T value)
         {
             if (node == null)
             {
@@ -239,7 +288,7 @@ namespace DataStructures.Trees.BTrees
             }
 
             //最后一个
-            return InsertFind(node.Children[node.Keys.Count()], value);
+            return InsertFind(node.Children[node.Keys.Count() - 1], value);
         }
         #endregion
 
@@ -261,32 +310,6 @@ namespace DataStructures.Trees.BTrees
             var actualDeleteNode = virtualDeleteNode;
             var actualDeleteIndex = virtualDeleteIndex;
 
-            //如果有直接后继结点，则获取直接后继结点的关键字替换掉待删除的结点关键字，然后删除直接后继结点
-            if (virtualDeleteNode.Children?.Count > actualDeleteIndex + 1)
-            {
-                var successorNode = virtualDeleteNode.Children[actualDeleteIndex + 1];
-                while (successorNode != null && successorNode.Children != null && successorNode.Children.Count > 0)
-                {
-                    successorNode = successorNode.Children[0];
-                }
-                virtualDeleteNode.Keys[actualDeleteIndex] = successorNode.Keys[0];
-                actualDeleteNode = successorNode;
-                actualDeleteIndex = 0;
-            }
-
-            #region 或者使用直接前驱结点作为替换
-            //if (virtualDeleteNode.Children?.Count > actualDeleteIndex + 1)
-            //{
-            //    var precursorNode = virtualDeleteNode.Children[actualDeleteIndex];
-            //    while (precursorNode != null && precursorNode.Children != null && precursorNode.Children.Count > 0)
-            //    {
-            //        precursorNode = precursorNode.Children[precursorNode.Children.Count - 1];
-            //    }
-            //    virtualDeleteNode.Keys[actualDeleteIndex] = precursorNode.Keys[precursorNode.Keys.Count - 1];
-            //    actualDeleteIndex = precursorNode.Keys.Count - 1;
-            //}
-            #endregion
-
             //进行实际删除
             ActualDelete(actualDeleteIndex, actualDeleteNode, null);
         }
@@ -297,8 +320,10 @@ namespace DataStructures.Trees.BTrees
         /// <param name="deleteKeyIndex"></param>
         /// <param name="deleteNode"></param>
         /// <param name="deleteNodePosition"></param>
-        private void ActualDelete(int deleteKeyIndex, BTreeNode<T> deleteNode, string deleteNodePosition)
+        private void ActualDelete(int deleteKeyIndex, BPlusTreeNode<T> deleteNode, string deleteNodePosition)
         {
+            var deleteKeyValue = deleteNode.Keys[deleteKeyIndex];
+
             //根结点
             if (deleteNode.Parent == null)
             {
@@ -355,54 +380,56 @@ namespace DataStructures.Trees.BTrees
                 {
                     if (parentNode.Children[i] == deleteNode)
                     {
-                        if (i != 0 && parentNode.Children.Count - 1 == i)
-                        {
-                            parentKeyIndex = i - 1;
-                        }
-                        else
-                        {
-                            parentKeyIndex = i;
-                        }
+                        parentKeyIndex = i;
                         parentChilidIndex = i;
                         break;
                     }
                 }
 
                 //1 左兄弟够借
-                if (parentChilidIndex - 1 >= 0)
+                //deleteNodePosition==null表示向上递归合并时不做借兄弟操作
+                if (deleteNodePosition == null && parentChilidIndex - 1 >= 0)
                 {
                     var leftSiblingNode = parentNode.Children[parentChilidIndex - 1];
                     if (leftSiblingNode.Keys.Count >= MinKeyCount + 1)
                     {
-                        //1 移除删除关键字
+                        //1 移除关键字
                         deleteNode.Keys.RemoveAt(deleteKeyIndex);
 
-                        //2 然后将父结点的关键字插入到当前结点的第一位
-                        deleteNode.Keys.Insert(0, parentNode.Keys[parentKeyIndex - 1]);
-
-                        //3 最后将左兄弟的最后一个关键字赋值给父结点
-                        parentNode.Keys[parentKeyIndex - 1] = leftSiblingNode.Keys[leftSiblingNode.Keys.Count - 1];
+                        //2 左兄弟的最后一个关键字移动过来自己的第一个关键字
+                        deleteNode.Keys.Insert(0, leftSiblingNode.Keys[leftSiblingNode.Keys.Count - 1]);
                         leftSiblingNode.Keys.RemoveAt(leftSiblingNode.Keys.Count - 1);
+
+                        //3 左兄弟的最大关键字，替换掉左兄弟父结点的关键字
+                        parentNode.Keys[parentKeyIndex - 1] = leftSiblingNode.Keys[leftSiblingNode.Keys.Count - 2];
+
+                        //4 如果删除的是最大值，那么需要继续向上替换所有父结点的最大值或最小值关键字
+                        if (deleteNode.Keys.Max().CompareTo(deleteKeyValue) < 0)
+                        {
+                            ReplaceParentKey(deleteNode, deleteKeyValue, deleteNode.Keys.Max());
+                        }
 
                         return;
                     }
                 }
 
                 //2 右兄弟够借
-                if (parentChilidIndex + 1 < parentNode.Children.Count)
+                //deleteNodePosition==null表示向上递归合并时不做借兄弟操作
+                if (deleteNodePosition == null && parentChilidIndex + 1 < parentNode.Children.Count)
                 {
                     var rightSiblingNode = parentNode.Children[parentChilidIndex + 1];
                     if (rightSiblingNode.Keys.Count >= MinKeyCount + 1)
                     {
-                        //1 移除删除关键字
+                        //1 移除关键字
                         deleteNode.Keys.RemoveAt(deleteKeyIndex);
 
-                        //2 将父结点的关键字插入到当前结点的最后一位
-                        deleteNode.Keys.Add(parentNode.Keys[parentKeyIndex]);
-
-                        //3 将右兄弟的第一个关键字赋值给父结点
-                        parentNode.Keys[parentKeyIndex] = rightSiblingNode.Keys[0];
+                        //2 右兄弟的第一个关键字移动过来自己的最后一个关键字
+                        deleteNode.Keys.Add(rightSiblingNode.Keys[0]);
                         rightSiblingNode.Keys.RemoveAt(0);
+
+                        //3 父结点的关键字更新为新的最后一个关键字
+                        parentNode.Keys[parentKeyIndex] = deleteNode.Keys[deleteNode.Keys.Count - 1];
+
                         return;
                     }
                 }
@@ -417,11 +444,8 @@ namespace DataStructures.Trees.BTrees
                         deleteNode.Keys.RemoveAt(deleteKeyIndex);
                         if (deleteNode.Children.Count > 0)
                         {
-                            deleteNode.Children.RemoveAt(deleteKeyIndex + 1);
+                            deleteNode.Children.RemoveAt(deleteKeyIndex);
                         }
-
-                        //用父结点关键字补到删除结点的头
-                        deleteNode.Keys.Insert(0, parentNode.Keys[parentKeyIndex]);
 
                         //将整个删除结点移动到左兄弟的尾
                         for (int i = 0; i < deleteNode.Keys.Count; i++)
@@ -434,7 +458,10 @@ namespace DataStructures.Trees.BTrees
                             }
                         }
 
-                        //因父结点的关键字下移，需对父结点进行相同调整
+                        //用左兄弟最大的关键字替换父结点关键字
+                        parentNode.Keys[parentKeyIndex - 1] = leftSiblingNode.Keys.Max();
+
+                        //因父结点的关键字减少，需对父结点进行相同调整
                         ActualDelete(parentKeyIndex, parentNode, "right");
                         return;
                     }
@@ -471,6 +498,20 @@ namespace DataStructures.Trees.BTrees
                         ActualDelete(parentKeyIndex, parentNode, "left");
                     }
                 }
+            }
+        }
+
+        private void ReplaceParentKey(BPlusTreeNode<T> node, T oldValue, T newValue)
+        {
+            var parent = node.Parent;
+            while (parent != null)
+            {
+                var index = parent.Keys.FindIndex(p => p.CompareTo(oldValue) == 0);
+                if (index > -1)
+                {
+                    parent.Keys[index] = newValue;
+                }
+                parent = parent.Parent;
             }
         }
         #endregion

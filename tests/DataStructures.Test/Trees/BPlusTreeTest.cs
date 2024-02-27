@@ -1,8 +1,9 @@
-﻿using DataStructures.Trees.BTrees;
+﻿using DataStructures.Trees.BPlusTrees;
+using DataStructures.Trees.BTrees;
 
 namespace DataStructures.Test.Trees
 {
-    public class BTreeTest
+    public class BPlusTreeTest
     {
         /// <summary>
         /// 
@@ -10,76 +11,76 @@ namespace DataStructures.Test.Trees
         [Fact]
         public void InsertTest()
         {
-            BTree<int> bTree = new BTree<int>(5);
+            BPlusTree<int> bPlusTree = new BPlusTree<int>(3);
 
-            bTree.Insert(25);
-            bTree.Insert(49);
-            bTree.Insert(38);
-            bTree.Insert(60);
+            bPlusTree.Insert(1);
+            bPlusTree.Insert(2);
+            bPlusTree.Insert(4);
             /***************************************
              **
-             **    [25 , 38 , 49 , 60]
+             **    [1 , 2 , 4 ]
              **
              ***************************************
              */
-            Assert.Equal(4, bTree.Root.Keys.Count);
+            //Assert.Equal(4, bTree.Root.Keys.Count);
 
 
-            bTree.Insert(80);
+            bPlusTree.Insert(3);
             //向上分裂
             /***************************************
              **
-             **                      [49]
-             **                     /    \
-             **                    /      \
-             **           [25 , 38]        [60 , 80]
+             **                    [2,     4]
+             **                     |      |
+             **                     |      |
+             **                 [1, 2] [3, 4]
              **
              ***************************************
              */
-            Assert.Equal(49, bTree.Root.Keys[0]);
-            Assert.Equal(2, bTree.Root.Children[0].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[1].Keys.Count);
+            //Assert.Equal(49, bTree.Root.Keys[0]);
+            //Assert.Equal(2, bTree.Root.Children[0].Keys.Count);
+            //Assert.Equal(2, bTree.Root.Children[1].Keys.Count);
 
-            bTree.Insert(90);
-            bTree.Insert(99);
-            bTree.Insert(88);
+            bPlusTree.Insert(50);
+            bPlusTree.Insert(40);
             //向上分裂
             /***************************************
              **
-             **                      [49,        88]
-             **                     /    \          \
-             **                    /      \          \
-             **           [25 , 38]        [60 , 80]  [90, 99]
+             **                    [2,      4,      50]
+             **                     |       |        |
+             **                     |       |        |
+             **              [1 , 2 ] [3 , 4] [40 , 50]
              **
              ***************************************
              */
-            Assert.Equal(2, bTree.Root.Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[0].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[1].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[2].Keys.Count);
+            //Assert.Equal(2, bTree.Root.Keys.Count);
+            //Assert.Equal(2, bTree.Root.Children[0].Keys.Count);
+            //Assert.Equal(2, bTree.Root.Children[1].Keys.Count);
+            //Assert.Equal(2, bTree.Root.Children[2].Keys.Count);
 
-            bTree.Insert(83);
-            bTree.Insert(87);
-            bTree.Insert(70);
+            bPlusTree.Insert(10);
+            bPlusTree.Insert(15);
             //向上分裂
             /***************************************
              **
-             **                      [49,            80         88]
-             **                     /    \          /  \          \
-             **                    /      \        /    \          \
-             **           [25 , 38]        [60 , 70]     [83, 87]  [90, 99]
+             *                           [4,                 50]
+             *                            |                   |
+             *                            |                   |
+             **                    [2,    4]       [15,      50]
+             **                     |     |         |         |
+             **                     |     |         |         |
+             **                [1, 2] [3, 4]  [10, 15]  [40, 50]
              **
              ***************************************
              */
-            Assert.Equal(3, bTree.Root.Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[0].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[1].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[2].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[3].Keys.Count);
+            Assert.Equal(3, bPlusTree.Root.Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[0].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[1].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[2].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[3].Keys.Count);
 
-            bTree.Insert(92);
-            bTree.Insert(93);
-            bTree.Insert(94);
+            bPlusTree.Insert(92);
+            bPlusTree.Insert(93);
+            bPlusTree.Insert(94);
             //向上分裂
             /***************************************
              **
@@ -90,16 +91,16 @@ namespace DataStructures.Test.Trees
              **
              ***************************************
              */
-            Assert.Equal(4, bTree.Root.Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[0].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[1].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[2].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[3].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[4].Keys.Count);
+            Assert.Equal(4, bPlusTree.Root.Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[0].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[1].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[2].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[3].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[4].Keys.Count);
 
-            bTree.Insert(73);
-            bTree.Insert(74);
-            bTree.Insert(75);
+            bPlusTree.Insert(73);
+            bPlusTree.Insert(74);
+            bPlusTree.Insert(75);
             //向上分裂
             /***************************************
              *                                            [80]
@@ -112,22 +113,22 @@ namespace DataStructures.Test.Trees
              **
              ***************************************
              */
-            Assert.Equal(1, bTree.Root.Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[0].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[1].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[0].Children[0].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[0].Children[1].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[0].Children[2].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[1].Children[0].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[1].Children[1].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[1].Children[2].Keys.Count);
+            Assert.Equal(1, bPlusTree.Root.Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[0].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[1].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[0].Children[0].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[0].Children[1].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[0].Children[2].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[1].Children[0].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[1].Children[1].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[1].Children[2].Keys.Count);
 
-            bTree.Insert(71);
-            bTree.Insert(72);
-            bTree.Insert(76);
-            bTree.Insert(77);
-            bTree.Insert(82);
-            bTree.Insert(86);
+            bPlusTree.Insert(71);
+            bPlusTree.Insert(72);
+            bPlusTree.Insert(76);
+            bPlusTree.Insert(77);
+            bPlusTree.Insert(82);
+            bPlusTree.Insert(86);
             //补充叶子结点，准备删除
             /***************************************
              *                                                 [  80  ]
@@ -141,7 +142,7 @@ namespace DataStructures.Test.Trees
              ***************************************
              */
 
-            bTree.Delete(60);
+            bPlusTree.Delete(60);
             //删除叶子结点，并且删除后仍然满足B树定义则直接删除
             /***************************************
              *                                                 [  80  ]
@@ -154,17 +155,17 @@ namespace DataStructures.Test.Trees
              **
              ***************************************
              */
-            Assert.Equal(1, bTree.Root.Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[0].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[1].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[0].Children[0].Keys.Count);
-            Assert.Equal(3, bTree.Root.Children[0].Children[1].Keys.Count);
-            Assert.Equal(4, bTree.Root.Children[0].Children[2].Keys.Count);
-            Assert.Equal(4, bTree.Root.Children[1].Children[0].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[1].Children[1].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[1].Children[2].Keys.Count);
+            Assert.Equal(1, bPlusTree.Root.Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[0].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[1].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[0].Children[0].Keys.Count);
+            Assert.Equal(3, bPlusTree.Root.Children[0].Children[1].Keys.Count);
+            Assert.Equal(4, bPlusTree.Root.Children[0].Children[2].Keys.Count);
+            Assert.Equal(4, bPlusTree.Root.Children[1].Children[0].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[1].Children[1].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[1].Children[2].Keys.Count);
 
-            bTree.Delete(80);
+            bPlusTree.Delete(80);
             //删除非叶子结点，如果有直接后继（或前驱）结点，则获取直接后继（或前驱）结点的关键字替换掉待删除的结点关键字，然后删除直接后继（或前驱）结点
             /***************************************
              *                                                 [  82  ]
@@ -174,16 +175,15 @@ namespace DataStructures.Test.Trees
              **                     /    \                  |             |                     /   \
              **                    /      \                 |             |                    /     \
              **             [25,38]        [70,71,72]      [74,75,76,77]   [83,86,87]    [90,92] [94,99]
-             **              
+             **
              ***************************************
              */
-            Assert.Equal(3, bTree.Root.Children[1].Children[0].Keys.Count);
+            Assert.Equal(3, bPlusTree.Root.Children[1].Children[0].Keys.Count);
 
-            bTree.Delete(25);
-            bTree.Delete(90);
+            bPlusTree.Delete(38);
+            bPlusTree.Delete(90);
             //删除叶子结点后不满足B树定义，如果左右兄弟的关键字数量大于下限则借向左右兄弟借，
-            //左兄弟够借：1移除删除关键字，2将父结点的关键字插入到当前结点的第一位，3将左兄弟的最后一个关键字赋值给父结点
-            //右兄弟够借：1移除删除关键字，2将父结点的关键字插入到当前结点的最后一位，3将右兄弟的第一个关键字赋值给父结点
+            //具体操作用父结点关键字代替自己，然后用兄弟结点关键字（左兄弟用最右关键字，右兄弟用最左关键字）代替父结点
             /***************************************
              *                                                 [  82  ]
              *                                                /        \
@@ -195,10 +195,10 @@ namespace DataStructures.Test.Trees
              **
              ***************************************
              */
-            Assert.Equal(2, bTree.Root.Children[0].Children[1].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[1].Children[0].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[0].Children[1].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[1].Children[0].Keys.Count);
 
-            bTree.Delete(49);
+            bPlusTree.Delete(49);
             //删除叶子结点后不满足B树定义，并且左右兄弟不够借情况，操作如下
             //1 如果左兄弟不够借，需要把自己所在的结点和左兄弟和父结点合并成一个结点
             //2 如果右兄弟不够借，需要把自己所在的结点和右兄弟和父结点合并成一个结点
@@ -214,22 +214,12 @@ namespace DataStructures.Test.Trees
              **
              ***************************************
              */
-            Assert.Equal(4, bTree.Root.Keys.Count);
-            Assert.Equal(4, bTree.Root.Children[0].Keys.Count);
-            Assert.Equal(4, bTree.Root.Children[1].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[2].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[3].Keys.Count);
-            Assert.Equal(2, bTree.Root.Children[4].Keys.Count);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        [Fact]
-        public void DeleteTest()
-        {
-            BTree<int> bTree = new BTree<int>(5);
-            bTree.Insert(25);
+            Assert.Equal(4, bPlusTree.Root.Keys.Count);
+            Assert.Equal(4, bPlusTree.Root.Children[0].Keys.Count);
+            Assert.Equal(4, bPlusTree.Root.Children[1].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[2].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[3].Keys.Count);
+            Assert.Equal(2, bPlusTree.Root.Children[4].Keys.Count);
         }
     }
 }
