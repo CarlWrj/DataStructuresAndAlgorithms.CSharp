@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Algorithms.Sorting
 {
-    public class InsertionSorts
+    public class InsertionSorter
     {
         /// <summary>
         /// 插入排序

@@ -7,16 +7,16 @@ using System.Threading.Tasks;
 
 namespace Algorithms.Test.Sorting
 {
-    public static class InsertionSortTest
+    public static class ShellSorterTest
     {
         [Fact]
-        public static void InsertionSort()
+        public static void ShellSort()
         {
             var actualList = new List<int>
             {
                 23, 42, 4, 16, 8, 15, 9, 55, 0, 34, 12, 2
             };
-            InsertionSorts.InsertionSort(actualList);
+            ShellSorter.Sort(actualList);
 
             var expectedList = new List<int>
             {
@@ -42,7 +42,7 @@ namespace Algorithms.Test.Sorting
             {
                 0, 23, 42, 4, 16, 8, 15, 9, 55, 0, 34, 12, 2
             };
-            InsertionSorts.InsertionSortBySentinel(actualList);
+            InsertionSorter.InsertionSortBySentinel(actualList);
 
             var expectedList = new List<int>
             {
