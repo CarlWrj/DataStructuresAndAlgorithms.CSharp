@@ -89,5 +89,16 @@ namespace Algorithms.Test.Sorting
             AssertList(actualList);
         }
         #endregion
+
+        #region 快速排序
+        [Fact]
+        public void QuickSort()
+        {
+            var actualList = JsonConvert.DeserializeObject<List<int>>(JsonConvert.SerializeObject(ActualList));
+            QuickSorter.Sort(actualList);
+
+            AssertList(actualList);
+        }
+        #endregion
     }
 }
