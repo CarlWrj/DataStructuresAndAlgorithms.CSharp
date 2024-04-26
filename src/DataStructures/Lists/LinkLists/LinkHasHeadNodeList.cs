@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Text;
 using System.Xml.Linq;
 
-namespace DataStructures.Lists.LinkList
+namespace DataStructures.Lists.LinkLists
 {
     /// <summary>
-    /// 单链表-不带头结点
+    /// 单链表-带头结点
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class LinkNotHasHeadNodeList<T>
+    public class LinkHasHeadNodeList<T>
     {
         /// <summary>
         /// 头节点
@@ -23,7 +23,7 @@ namespace DataStructures.Lists.LinkList
         {
             get
             {
-                var lenght = 0;
+                var lenght = -1;
                 var currentNode = Head;
                 while (currentNode != null)
                 {
@@ -37,27 +37,23 @@ namespace DataStructures.Lists.LinkList
         /// <summary>
         /// 初始化
         /// </summary>
-        public LinkNotHasHeadNodeList()
+        /// <param name="isUsedHead">是否使用头节点</param>
+        public LinkHasHeadNodeList()
         {
+            Head = new LinkListNode<T>();
         }
 
         /// <summary>
         /// 尾插法创建单链表
         /// </summary>
-        public static LinkNotHasHeadNodeList<T> TailInsert(List<T> list)
+        public static LinkHasHeadNodeList<T> TailInsert(List<T> list)
         {
-            var linkList = new LinkNotHasHeadNodeList<T>();
+            var linkList = new LinkHasHeadNodeList<T>();
             var tailNode = linkList.Head;
 
             foreach (var item in list)
             {
                 var nextNode = new LinkListNode<T>() { Data = item };
-
-                if (linkList.Head == null)
-                {
-                    linkList.Head = tailNode = nextNode;
-                    continue;
-                }
 
                 tailNode.Next = nextNode;
                 tailNode = nextNode;
@@ -72,23 +68,16 @@ namespace DataStructures.Lists.LinkList
         /// <param name="isUsedHead"></param>
         /// <param name="list"></param>
         /// <returns></returns>
-        public static LinkNotHasHeadNodeList<T> HeadInsert(List<T> list)
+        public static LinkHasHeadNodeList<T> HeadInsert(List<T> list)
         {
-            var linkList = new LinkNotHasHeadNodeList<T>();
+            var linkList = new LinkHasHeadNodeList<T>();
 
             foreach (var item in list)
             {
                 var nextNode = new LinkListNode<T>() { Data = item };
 
-                if (linkList.Head == null)
-                {
-                    linkList.Head = nextNode;
-                }
-                else
-                {
-                    nextNode.Next = linkList.Head;
-                    linkList.Head = nextNode;
-                }
+                nextNode.Next = linkList.Head.Next;
+                linkList.Head.Next = nextNode;
             }
 
             return linkList;
@@ -103,17 +92,9 @@ namespace DataStructures.Lists.LinkList
         /// <returns></returns>
         public bool Insert(int index, T element)
         {
-            if (index < 0)
+            if (index < 1)
             {
                 return false;
-            }
-
-            //则对第一个元素进行操作时需要更新头节点
-            if (index == 0)
-            {
-                var firstNode = new LinkListNode<T>() { Data = element, Next = Head };
-                Head = firstNode;
-                return true;
             }
 
             //查找插入节点
@@ -179,17 +160,9 @@ namespace DataStructures.Lists.LinkList
         /// <returns></returns>
         public bool Delete(int index)
         {
-            if (index < 0 || Head == null)
+            if (index < 1 || Head == null)
             {
                 return false;
-            }
-
-            //对第一个元素进行操作时需要更新头节点
-            if (index == 0)
-            {
-                var firstNode = Head;
-                Head = firstNode.Next;
-                return true;
             }
 
             //查找插入节点
@@ -259,8 +232,8 @@ namespace DataStructures.Lists.LinkList
                 }
 
                 var currentIndex = 0;
-                var currentNode = Head;
-                while (currentNode != null && currentIndex < index)
+                var currentNode = Head.Next;
+                while (currentNode != null && currentIndex < index - 1)
                 {
                     currentNode = currentNode.Next;
                     currentIndex++;

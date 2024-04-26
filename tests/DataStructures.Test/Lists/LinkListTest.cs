@@ -1,5 +1,5 @@
 ﻿using DataStructures.Lists;
-using DataStructures.Lists.LinkList;
+using DataStructures.Lists.LinkLists;
 using System;
 using System.Collections;
 using System.Collections.Generic;

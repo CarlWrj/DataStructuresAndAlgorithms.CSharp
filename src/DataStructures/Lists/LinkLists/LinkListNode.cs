@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataStructures.Lists.LinkList
+namespace DataStructures.Lists.LinkLists
 {
     /// <summary>
     /// 单链表节点
