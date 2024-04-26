@@ -67,7 +67,7 @@ namespace DataStructures.Test.Lists
         /// 没有头节点
         /// </summary>
         [Fact]
-        public void NotUsedHeadNodeTest()
+        public void NotHasHeadNodeTest()
         {
             var list = new List<int>();
             for (int i = 0; i <= 9; i++)
