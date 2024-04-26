@@ -27,15 +27,15 @@ namespace DataStructures.Test.Lists
             {
                 list.Add(i);
             }
-            var linkList = new LinkHasHeadNodeList<int>();
+            var linkList = new LinkHasHeadList<int>();
 
             //初始化
-            var headInsertList = LinkHasHeadNodeList<int>.HeadInsert(list);
+            var headInsertList = LinkHasHeadList<int>.HeadInsert(list);
             for (int i = 1, j = 10; i <= 10; i++, j--)
             {
                 Assert.Equal(i, headInsertList[j].Data);
             }
-            var tailInsertList = LinkHasHeadNodeList<int>.TailInsert(list);
+            var tailInsertList = LinkHasHeadList<int>.TailInsert(list);
             for (int i = 1; i <= 10; i++)
             {
                 Assert.Equal(i, tailInsertList[i].Data);
@@ -74,15 +74,15 @@ namespace DataStructures.Test.Lists
             {
                 list.Add(i);
             }
-            var linkList = new LinkNotHasHeadNodeList<int>();
+            var linkList = new LinkNotHasHeadList<int>();
 
             //初始化
-            var headInsertList = LinkNotHasHeadNodeList<int>.HeadInsert(list);
+            var headInsertList = LinkNotHasHeadList<int>.HeadInsert(list);
             for (int i = 0, j = 9; i < 10; i++, j--)
             {
                 Assert.Equal(i, headInsertList[j].Data);
             }
-            var tailInsertList = LinkNotHasHeadNodeList<int>.TailInsert(list);
+            var tailInsertList = LinkNotHasHeadList<int>.TailInsert(list);
             for (int i = 0; i < 10; i++)
             {
                 Assert.Equal(i, tailInsertList[i].Data);

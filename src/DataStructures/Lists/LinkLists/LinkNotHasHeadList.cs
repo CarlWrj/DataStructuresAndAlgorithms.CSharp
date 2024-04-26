@@ -9,7 +9,7 @@ namespace DataStructures.Lists.LinkLists
     /// 单链表-不带头结点
     /// </summary>
     /// <typeparam name="T"></typeparam>
-    public class LinkNotHasHeadNodeList<T>
+    public class LinkNotHasHeadList<T>
     {
         /// <summary>
         /// 头节点
@@ -37,16 +37,16 @@ namespace DataStructures.Lists.LinkLists
         /// <summary>
         /// 初始化
         /// </summary>
-        public LinkNotHasHeadNodeList()
+        public LinkNotHasHeadList()
         {
         }
 
         /// <summary>
         /// 尾插法创建单链表
         /// </summary>
-        public static LinkNotHasHeadNodeList<T> TailInsert(List<T> list)
+        public static LinkNotHasHeadList<T> TailInsert(List<T> list)
         {
-            var linkList = new LinkNotHasHeadNodeList<T>();
+            var linkList = new LinkNotHasHeadList<T>();
             var tailNode = linkList.Head;
 
             foreach (var item in list)
@@ -72,9 +72,9 @@ namespace DataStructures.Lists.LinkLists
         /// <param name="isUsedHead"></param>
         /// <param name="list"></param>
         /// <returns></returns>
-        public static LinkNotHasHeadNodeList<T> HeadInsert(List<T> list)
+        public static LinkNotHasHeadList<T> HeadInsert(List<T> list)
         {
-            var linkList = new LinkNotHasHeadNodeList<T>();
+            var linkList = new LinkNotHasHeadList<T>();
 
             foreach (var item in list)
             {
