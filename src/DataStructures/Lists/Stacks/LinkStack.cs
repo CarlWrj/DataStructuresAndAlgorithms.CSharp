@@ -46,6 +46,14 @@ namespace DataStructures.Lists.Stacks
             }
         }
 
+        public bool Empty
+        {
+            get
+            {
+                return _top == null;
+            }
+        }
+
         /// <summary>
         /// 入栈
         /// </summary>
