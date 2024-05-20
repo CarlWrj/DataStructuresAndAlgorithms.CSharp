@@ -100,5 +100,16 @@ namespace Algorithms.Test.Sorting
             AssertList(actualList);
         }
         #endregion
+
+        #region 简单选择排序
+        [Fact]
+        public void SelectionSort()
+        {
+            var actualList = JsonConvert.DeserializeObject<List<int>>(JsonConvert.SerializeObject(ActualList));
+            SelectionSorter.SimpleSelectSort(actualList);
+
+            AssertList(actualList);
+        }
+        #endregion
     }
 }
