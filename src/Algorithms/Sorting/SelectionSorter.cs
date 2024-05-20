@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DataStructures.Heaps;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -37,6 +38,32 @@ namespace Algorithms.Sorting
                 collection[min] = t;
             }
         }
-        #endregion 
+        #endregion
+
+        #region 大根堆排序
+        /// <summary>
+        /// 大根堆排序，得到的是递增序列
+        /// 空间复杂度：O(1)
+        /// 时间复杂度：O(nlogn)
+        /// 稳定性：不稳定
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="collection"></param>
+        public static void MaxHeapSort<T>(this IList<T> collection) where T : IComparable<T>
+        {
+            var binaryMaxHeap = new BinaryMaxHeap<T>(collection);
+            binaryMaxHeap.BuildMaxHeap();
+            for (var i = binaryMaxHeap.Heap.Count; i > 0; i--)
+            {
+                //交换头尾值
+                var temp = binaryMaxHeap.Heap[0];
+                binaryMaxHeap.Heap[0] = binaryMaxHeap.Heap[i - 1];
+                binaryMaxHeap.Heap[i - 1] = temp;
+
+                //剩余的待排序元素整理成堆
+                binaryMaxHeap.HeapAdjust(1, i - 1);
+            }
+        }
+        #endregion
     }
 }

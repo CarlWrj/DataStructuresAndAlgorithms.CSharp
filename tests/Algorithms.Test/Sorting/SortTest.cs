@@ -111,5 +111,16 @@ namespace Algorithms.Test.Sorting
             AssertList(actualList);
         }
         #endregion
+
+        #region 大根堆选择排序
+        [Fact]
+        public void MaxHeapSort()
+        {
+            var actualList = JsonConvert.DeserializeObject<List<int>>(JsonConvert.SerializeObject(ActualList));
+            SelectionSorter.MaxHeapSort(actualList);
+
+            AssertList(actualList);
+        }
+        #endregion
     }
 }
