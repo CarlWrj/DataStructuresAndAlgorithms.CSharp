@@ -6,13 +6,13 @@ namespace Algorithms.Sorting
 {
     /// <summary>
     /// 选择排序
-    /// 原理：每一趟在待排序元素中选取关键字最小（或最大）的元素加入有序子序列
     /// </summary>
     public static class SelectionSorter
     {
         #region 简单选择排序
         /// <summary>
         /// 简单选择排序
+        /// 原理：每一趟在待排序元素中选取关键字最小（或最大）的元素加入有序子序列
         /// 空间复杂度：O(1)
         /// 时间复杂度：O(n²)
         /// 稳定性：不稳定
