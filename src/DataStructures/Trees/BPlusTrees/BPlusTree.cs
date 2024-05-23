@@ -126,6 +126,14 @@ namespace DataStructures.Trees.BPlusTrees
                 //插入值到节点中
                 Insert(insertNode, value, newSmallNode, newBigNode);
 
+                //如果插入值是当前结点的最大值，那么需要向上递归替换掉父级的值
+                if (insertNode.Keys.Count >= 2 && insertNode.Keys.Max().CompareTo(value) == 0)
+                {
+                    var prevMaxValue = insertNode.Keys[insertNode.Keys.Count - 2];
+                    var maxValue = insertNode.Keys[insertNode.Keys.Count - 1];
+                    ReplaceParentKey(insertNode, prevMaxValue, maxValue);
+                }
+
                 //没有大于最大键值那么不需要向上分裂，此次插入结束
                 if (insertNode.Keys.Count <= MaxKeyCount)
                 {
@@ -311,7 +319,7 @@ namespace DataStructures.Trees.BPlusTrees
             var actualDeleteIndex = virtualDeleteIndex;
 
             //进行实际删除
-            ActualDelete(actualDeleteIndex, actualDeleteNode, null);
+            ActualDelete(actualDeleteIndex, actualDeleteNode);
         }
 
         /// <summary>
@@ -320,39 +328,39 @@ namespace DataStructures.Trees.BPlusTrees
         /// <param name="deleteKeyIndex"></param>
         /// <param name="deleteNode"></param>
         /// <param name="deleteNodePosition"></param>
-        private void ActualDelete(int deleteKeyIndex, BPlusTreeNode<T> deleteNode, string deleteNodePosition)
+        private void ActualDelete(int deleteKeyIndex, BPlusTreeNode<T> deleteNode)
         {
             var deleteKeyValue = deleteNode.Keys[deleteKeyIndex];
 
             //根结点
             if (deleteNode.Parent == null)
             {
-                //如果根结点只剩一个，则直接删除并用合并的节点作为新的根结点
+                //如果根结点只剩一个，则直接删除并用
                 if (deleteNode.Keys.Count == 1)
                 {
+                    //先删除
                     deleteNode.Keys.RemoveAt(deleteKeyIndex);
-                    if (deleteNodePosition == "left")
+
+                    //如果还有子结点则和子节点合并，并作为新的根结点
+                    if (deleteNode.Children.Count > 0)
                     {
-                        deleteNode.Children.RemoveAt(deleteKeyIndex);
+                        deleteNode.Children[0].Parent = null;
+                        Root = deleteNode.Children[0];
                     }
-                    else if (deleteNodePosition == "right")
+                    //没有子结点，则表示删除了最后一个关键字
+                    else
                     {
-                        deleteNode.Children.RemoveAt(deleteKeyIndex + 1);
+                        Root = null;
+                        Head = null;
                     }
-                    deleteNode.Children[0].Parent = null;
-                    Root = deleteNode.Children[0];
                 }
                 //否则直接删除即可
                 else
                 {
                     deleteNode.Keys.RemoveAt(deleteKeyIndex);
-                    if (deleteNodePosition == "left")
+                    if (deleteNode.Children.Count > 0)
                     {
                         deleteNode.Children.RemoveAt(deleteKeyIndex);
-                    }
-                    else if (deleteNodePosition == "right")
-                    {
-                        deleteNode.Children.RemoveAt(deleteKeyIndex + 1);
                     }
                 }
             }
@@ -360,48 +368,62 @@ namespace DataStructures.Trees.BPlusTrees
             else if (deleteNode.Keys.Count >= MinKeyCount + 1)
             {
                 deleteNode.Keys.RemoveAt(deleteKeyIndex);
-                if (deleteNodePosition == "left")
+                if (deleteNode.Children.Count > 0)
                 {
                     deleteNode.Children.RemoveAt(deleteKeyIndex);
                 }
-                else if (deleteNodePosition == "right")
-                {
-                    deleteNode.Children.RemoveAt(deleteKeyIndex + 1);
-                }
             }
-            //如果删除后不满足最小关键字数量（阶数/2，取上整），则需向兄弟结点借，具体有以下4种情况
+            //如果删除后不满足最小关键字数量（阶数/2，取上整）
             else
             {
                 //获取父节点关键字下标和自己所在父结点的下标
                 var parentNode = deleteNode.Parent;
-                var parentKeyIndex = -1;
-                var parentChilidIndex = -1;
+                var parentIndex = -1;
                 for (int i = 0; i < parentNode.Children.Count; i++)
                 {
                     if (parentNode.Children[i] == deleteNode)
                     {
-                        parentKeyIndex = i;
-                        parentChilidIndex = i;
+                        parentIndex = i;
                         break;
                     }
                 }
 
-                //1 左兄弟够借
-                //deleteNodePosition==null表示向上递归合并时不做借兄弟操作
-                if (deleteNodePosition == null && parentChilidIndex - 1 >= 0)
+                //如果父结点是根结点，并且没有左右兄弟那么将自己和父结点合并
+                if (deleteNode.Parent == Root && deleteNode.Parent.Children.Count == 1)
                 {
-                    var leftSiblingNode = parentNode.Children[parentChilidIndex - 1];
+                    deleteNode.Keys.RemoveAt(deleteKeyIndex);
+                    if (deleteNode.Children.Count > 0)
+                    {
+                        deleteNode.Children.RemoveAt(deleteKeyIndex);
+                    }
+                    ActualDelete(parentIndex, parentNode);
+                }
+
+                //有左右兄弟，则分以下4种情况进行处理
+                //1 左兄弟够借
+                if (parentIndex - 1 >= 0)
+                {
+                    var leftSiblingNode = parentNode.Children[parentIndex - 1];
                     if (leftSiblingNode.Keys.Count >= MinKeyCount + 1)
                     {
                         //1 移除关键字
                         deleteNode.Keys.RemoveAt(deleteKeyIndex);
+                        if (deleteNode.Children.Count > 0)
+                        {
+                            deleteNode.Children.RemoveAt(deleteKeyIndex);
+                        }
 
-                        //2 左兄弟的最后一个关键字移动过来自己的第一个关键字
+                        //2 左兄弟的最后一个关键字和子节点移动过来自己的第一个关键字和第一个子节点
                         deleteNode.Keys.Insert(0, leftSiblingNode.Keys[leftSiblingNode.Keys.Count - 1]);
                         leftSiblingNode.Keys.RemoveAt(leftSiblingNode.Keys.Count - 1);
+                        if (leftSiblingNode.Children.Count > 0)
+                        {
+                            deleteNode.Children.Insert(0, leftSiblingNode.Children[leftSiblingNode.Children.Count - 1]);
+                            leftSiblingNode.Children.RemoveAt(leftSiblingNode.Children.Count - 1);
+                        }
 
-                        //3 左兄弟的最大关键字，替换掉左兄弟父结点的关键字
-                        parentNode.Keys[parentKeyIndex - 1] = leftSiblingNode.Keys[leftSiblingNode.Keys.Count - 2];
+                        //3 左兄弟剩下的最大关键字，替换掉左兄弟父结点的关键字
+                        parentNode.Keys[parentIndex - 1] = leftSiblingNode.Keys[leftSiblingNode.Keys.Count - 1];
 
                         //4 如果删除的是最大值，那么需要继续向上替换所有父结点的最大值或最小值关键字
                         if (deleteNode.Keys.Max().CompareTo(deleteKeyValue) < 0)
@@ -414,30 +436,40 @@ namespace DataStructures.Trees.BPlusTrees
                 }
 
                 //2 右兄弟够借
-                //deleteNodePosition==null表示向上递归合并时不做借兄弟操作
-                if (deleteNodePosition == null && parentChilidIndex + 1 < parentNode.Children.Count)
+                if (parentIndex + 1 < parentNode.Children.Count)
                 {
-                    var rightSiblingNode = parentNode.Children[parentChilidIndex + 1];
+                    var rightSiblingNode = parentNode.Children[parentIndex + 1];
                     if (rightSiblingNode.Keys.Count >= MinKeyCount + 1)
                     {
                         //1 移除关键字
                         deleteNode.Keys.RemoveAt(deleteKeyIndex);
+                        if (deleteNode.Children.Count > 0)
+                        {
+                            deleteNode.Children.RemoveAt(deleteKeyIndex);
+                        }
 
-                        //2 右兄弟的第一个关键字移动过来自己的最后一个关键字
+                        //2 右兄弟的第一个关键字和第一个子结点移动过来自己的最后一个关键字和最后一个子结点
                         deleteNode.Keys.Add(rightSiblingNode.Keys[0]);
                         rightSiblingNode.Keys.RemoveAt(0);
+                        if (rightSiblingNode.Children.Count > 0)
+                        {
+                            deleteNode.Children.Add(rightSiblingNode.Children[0]);
+                            rightSiblingNode.Children.RemoveAt(0);
+                        }
 
-                        //3 父结点的关键字更新为新的最后一个关键字
-                        parentNode.Keys[parentKeyIndex] = deleteNode.Keys[deleteNode.Keys.Count - 1];
+                        //3 向上替换父结点的最大值关键字
+                        parentNode.Keys[parentIndex] = deleteNode.Keys.Max();
+                        //deleteKeyValue = deleteNode.Keys[deleteNode.Keys.Count - 1];
+                        //ReplaceParentKey(deleteNode, deleteKeyValue, deleteNode.Keys.Max());
 
                         return;
                     }
                 }
 
                 //3 左兄弟不够借，需要把自己所在的结点和左兄弟和父结点合并成一个结点
-                if (parentChilidIndex - 1 >= 0)
+                if (parentIndex - 1 >= 0)
                 {
-                    var leftSiblingNode = parentNode.Children[parentChilidIndex - 1];
+                    var leftSiblingNode = parentNode.Children[parentIndex - 1];
                     if (leftSiblingNode.Keys.Count < MinKeyCount + 1)
                     {
                         //移除删除结点
@@ -445,6 +477,14 @@ namespace DataStructures.Trees.BPlusTrees
                         if (deleteNode.Children.Count > 0)
                         {
                             deleteNode.Children.RemoveAt(deleteKeyIndex);
+                        }
+                        //叶子节点需要更新链式位置
+                        else if (deleteNode.Children.Count == 0)
+                        {
+                            if (deleteNode.Next != null)
+                            {
+                                leftSiblingNode.Next = deleteNode.Next;
+                            }
                         }
 
                         //将整个删除结点移动到左兄弟的尾
@@ -457,20 +497,21 @@ namespace DataStructures.Trees.BPlusTrees
                                 leftSiblingNode.Children.Add(deleteNode.Children[i]);
                             }
                         }
+                        //parentNode.Children.RemoveAt(parentIndex);
 
                         //用左兄弟最大的关键字替换父结点关键字
-                        parentNode.Keys[parentKeyIndex - 1] = leftSiblingNode.Keys.Max();
+                        parentNode.Keys[parentIndex - 1] = leftSiblingNode.Keys.Max();
 
                         //因父结点的关键字减少，需对父结点进行相同调整
-                        ActualDelete(parentKeyIndex, parentNode, "right");
+                        ActualDelete(parentIndex, parentNode);
                         return;
                     }
                 }
 
                 //4 右兄弟不够借，需要把自己所在的结点和右兄弟和父结点合并成一个结点
-                if (parentChilidIndex + 1 < parentNode.Children.Count)
+                if (parentIndex + 1 < parentNode.Children.Count)
                 {
-                    var rightSiblingNode = parentNode.Children[parentChilidIndex + 1];
+                    var rightSiblingNode = parentNode.Children[parentIndex + 1];
                     if (rightSiblingNode.Keys.Count < MinKeyCount + 1)
                     {
                         //移除删除结点
@@ -479,9 +520,19 @@ namespace DataStructures.Trees.BPlusTrees
                         {
                             deleteNode.Children.RemoveAt(deleteKeyIndex);
                         }
-
-                        //用父结点关键字补到删除结点的尾
-                        deleteNode.Keys.Add(parentNode.Keys[parentKeyIndex]);
+                        //叶子节点需要更新链式位置
+                        else if (deleteNode.Children.Count == 0)
+                        {
+                            if (parentIndex - 1 >= 0)
+                            {
+                                var leftSiblingNode = parentNode.Children[parentIndex - 1];
+                                leftSiblingNode.Next = rightSiblingNode;
+                            }
+                            else
+                            {
+                                this.Head = rightSiblingNode;
+                            }
+                        }
 
                         //将整个删除结点移动到右兄弟的头
                         for (int i = deleteNode.Keys.Count - 1; i > -1; i--)
@@ -495,12 +546,18 @@ namespace DataStructures.Trees.BPlusTrees
                         }
 
                         //因父结点的关键字下移，需对父结点进行相同调整
-                        ActualDelete(parentKeyIndex, parentNode, "left");
+                        ActualDelete(parentIndex, parentNode);
                     }
                 }
             }
         }
 
+        /// <summary>
+        /// 替换父级关键字
+        /// </summary>
+        /// <param name="node"></param>
+        /// <param name="oldValue"></param>
+        /// <param name="newValue"></param>
         private void ReplaceParentKey(BPlusTreeNode<T> node, T oldValue, T newValue)
         {
             var parent = node.Parent;
