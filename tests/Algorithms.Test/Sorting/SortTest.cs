@@ -122,5 +122,16 @@ namespace Algorithms.Test.Sorting
             AssertList(actualList);
         }
         #endregion
+
+        #region 归并排序
+        [Fact]
+        public void MergeSort()
+        {
+            var actualList = JsonConvert.DeserializeObject<List<int>>(JsonConvert.SerializeObject(ActualList));
+            MergeSorter.Sort(actualList);
+
+            AssertList(actualList);
+        }
+        #endregion
     }
 }
