@@ -12,6 +12,7 @@ namespace DataStructures.Graphs
     /// <typeparam name="T"></typeparam>
     public class AdjacencyMatrixGraph<T>
     {
+        #region 属性
         /// <summary>
         /// 空边
         /// </summary>
@@ -51,7 +52,14 @@ namespace DataStructures.Graphs
         /// 第一个顶点
         /// </summary>
         public T FirstVertice { get; set; }
+        #endregion
 
+        #region CRUD
+        /// <summary>
+        /// 构造函数
+        /// </summary>
+        /// <param name="capacity"></param>
+        /// <param name="isDirected"></param>
         public AdjacencyMatrixGraph(uint capacity = 10, bool isDirected = false)
         {
             VerticesCount = 0;
@@ -71,6 +79,10 @@ namespace DataStructures.Graphs
             }
         }
 
+        /// <summary>
+        /// 添加多个顶点
+        /// </summary>
+        /// <param name="vertices"></param>
         public void AddVertices(IList<T> vertices)
         {
             foreach (var vertice in vertices)
@@ -79,7 +91,11 @@ namespace DataStructures.Graphs
             }
         }
 
-        private void AddVertice(T vertice)
+        /// <summary>
+        /// 添加顶点
+        /// </summary>
+        /// <param name="vertice"></param>
+        public void AddVertice(T vertice)
         {
             if (VerticesCount == 0)
             {
@@ -89,6 +105,12 @@ namespace DataStructures.Graphs
             VerticesCount++;
         }
 
+        /// <summary>
+        /// 添加边
+        /// </summary>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <param name="weight"></param>
         public void AddEdge(T v1, T v2, long weight = 1)
         {
             var v1Index = Vertices.IndexOf(v1);
@@ -102,7 +124,6 @@ namespace DataStructures.Graphs
             EdgesCount++;
         }
 
-        #region  遍历
         /// <summary>
         /// 深度优先遍历
         /// </summary>

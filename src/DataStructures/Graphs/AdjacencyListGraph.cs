@@ -10,6 +10,7 @@ namespace DataStructures.Graphs
     /// </summary>
     public class AdjacencyListGraph<T>
     {
+        #region 属性
         /// <summary>
         /// 边数量
         /// </summary>
@@ -35,11 +36,28 @@ namespace DataStructures.Graphs
         /// </summary>
         public Dictionary<T, List<WeightedEdge<T>>> AdjacencyList { get; set; }
 
+        /// <summary>
+        /// 顶点数量
+        /// </summary>
+        public int VerticesCount
+        {
+            get { return AdjacencyList.Count; }
+        }
+        #endregion
+
+        #region CRUD
+        /// <summary>
+        /// 构造函数
+        /// </summary>
         public AdjacencyListGraph()
         {
             AdjacencyList = new Dictionary<T, List<WeightedEdge<T>>>();
         }
 
+        /// <summary>
+        /// 添加多个顶点
+        /// </summary>
+        /// <param name="vertices"></param>
         public void AddVertices(IList<T> vertices)
         {
             foreach (var item in vertices)
@@ -48,11 +66,21 @@ namespace DataStructures.Graphs
             }
         }
 
-        private void AddVertice(T item)
+        /// <summary>
+        /// 添加顶点
+        /// </summary>
+        /// <param name="item"></param>
+        public void AddVertice(T item)
         {
             AdjacencyList.Add(item, new List<WeightedEdge<T>>());
         }
 
+        /// <summary>
+        /// 添加边
+        /// </summary>
+        /// <param name="v1"></param>
+        /// <param name="v2"></param>
+        /// <param name="weight"></param>
         public void AddEdge(T v1, T v2, long weight = 1)
         {
             AdjacencyList[v1].Add(new WeightedEdge<T>(v1, v2, weight));
@@ -62,14 +90,6 @@ namespace DataStructures.Graphs
                 AdjacencyList[v2].Add(new WeightedEdge<T>(v2, v1, weight));
             }
             EdgeCount++;
-        }
-
-        /// <summary>
-        /// Gets the count of vetices.
-        /// </summary>
-        public virtual int VerticesCount
-        {
-            get { return AdjacencyList.Count; }
         }
 
         /// <summary>
@@ -141,15 +161,9 @@ namespace DataStructures.Graphs
 
             return vertices;
         }
+        #endregion
 
-        ///// <summary>
-        ///// 最小生成树-普里姆算法
-        ///// </summary>
-        //public List<T> MinSpanTreeByPRIM(T source)
-        //{
-
-        //}
-
+        #region 拓扑排序
         /// <summary>
         /// 拓扑排序
         /// </summary>
@@ -208,7 +222,9 @@ namespace DataStructures.Graphs
 
             return topos;
         }
+        #endregion
 
+        #region 关键路径
         /// <summary>
         /// 关键路径
         /// </summary>
@@ -290,33 +306,34 @@ namespace DataStructures.Graphs
                 }
             }
         }
+        #endregion
     }
 
     /// <summary>
-    /// The graph weighted edge class.
+    /// 有权图的边
     /// </summary>
     public class WeightedEdge<TVertex>
     {
         /// <summary>
-        /// Gets or sets the source.
+        /// 源顶点
         /// </summary>
         /// <value>The source.</value>
         public TVertex Source { get; set; }
 
         /// <summary>
-        /// Gets or sets the destination.
+        /// 目标顶点
         /// </summary>
         /// <value>The destination.</value>
         public TVertex Destination { get; set; }
 
         /// <summary>
-        /// Gets or sets the weight of edge.
+        /// 权值
         /// </summary>
         /// <value>The weight.</value>
         public Int64 Weight { get; set; }
 
         /// <summary>
-        /// Gets a value indicating whether this edge is weighted.
+        /// 是否有权值
         /// </summary>
         public bool IsWeighted
         {
@@ -324,7 +341,7 @@ namespace DataStructures.Graphs
         }
 
         /// <summary>
-        /// CONSTRUCTOR
+        /// 构造函数
         /// </summary>
         public WeightedEdge(TVertex src, TVertex dst, Int64 weight)
         {
