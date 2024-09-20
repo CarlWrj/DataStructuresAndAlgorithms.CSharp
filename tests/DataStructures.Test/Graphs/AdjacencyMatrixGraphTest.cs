@@ -86,7 +86,9 @@ namespace DataStructures.Test.Graphs
             graph.AddEdge("v5", "v6", 6);
 
             //最小生成树-普里姆算法
-            Assert.True(graph.MinSpanTreeByPRIM("v1").SequenceEqual(new string[] { "v1", "v3", "v6", "v4", "v2", "v5" }));
+            var result = graph.MinSpanTreeByPRIM("v1");
+            Assert.True(result.Select(p => p.Vertice).SequenceEqual(new string[] { "v3", "v6", "v4", "v2", "v5" }));
+            Assert.True(result.Select(p => p.Weight).SequenceEqual(new long[] { 1, 4, 2, 5, 3 }));
         }
 
         /// <summary>
@@ -97,7 +99,7 @@ namespace DataStructures.Test.Graphs
         {
             var graph = new AdjacencyMatrixGraph<string>();
 
-            graph.AddVertices(new string[] { "v1", "v2", "v3", "v4", "v5", "v6" });
+            graph.AddVertices(new string[] { "v1", "v2", "v3", "v4", "v5", "v6", "v7", "v8" });
 
             graph.AddEdge("v1", "v2");
             graph.AddEdge("v1", "v3");

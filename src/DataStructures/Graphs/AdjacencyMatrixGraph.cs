@@ -186,47 +186,96 @@ namespace DataStructures.Graphs
         #region 最小生成树
         /// <summary>
         /// 最小生成树-普里姆算法
+        /// 适用于边稠密图
+        /// 时间复杂度：O(v^2)
         /// </summary>
         /// <param name="vertexValue"></param>
-        public List<T> MinSpanTreeByPRIM(T source)
+        public List<MinSpanTreeByPRIMModel<T>> MinSpanTreeByPRIM(T source)
         {
-            //用于
-            List<(T vertice, long weight)> vertices = new List<(T vertice, long weight)>();
-            var auxiliaryList = new List<long>();
-            var sourceIndex = Vertices.IndexOf(source);
+            //记录生成的最小生成树
+            var vertices = new List<MinSpanTreeByPRIMModel<T>>();
+            //辅助数组
+            var auxiliaryList = new List<MinSpanTreeByPRIMModel<T>>();
 
+            //初始化辅助模型
+            var sourceIndex = Vertices.IndexOf(source);
             for (int i = 0; i < VerticesCount; i++)
             {
+                var model = new MinSpanTreeByPRIMModel<T>();
                 if (AdjacencyMatrix[sourceIndex, i] == 0)
                 {
-                    auxiliaryList.Add(long.MaxValue);
+                    model.Weight = long.MaxValue;
                 }
                 else
                 {
-                    auxiliaryList.Add(AdjacencyMatrix[sourceIndex, i]);
+                    model.Vertice = source;
+                    model.Weight = AdjacencyMatrix[sourceIndex, i];
                 }
+                auxiliaryList.Add(model);
             }
+            auxiliaryList[sourceIndex].Weight = 0;
 
+            //每次从没有被标记过的顶点中，选择权值最小的那条边的顶点进行标记
             for (int i = 1; i < VerticesCount; i++)
             {
-                var minIndex = auxiliaryList.IndexOf(auxiliaryList.Min());
+                //获取最小的权值，并且没有被辅助数组标记的节点下标
+                var minIndex = -1;
+                var minWeight = long.MaxValue;
+                for (int auxiliaryIndex = 0; auxiliaryIndex < auxiliaryList.Count; auxiliaryIndex++)
+                {
+                    var auxiliary = auxiliaryList[auxiliaryIndex];
+                    if (auxiliary.Weight != 0)
+                    {
+                        if (auxiliary.Weight < minWeight)
+                        {
+                            minWeight = auxiliary.Weight;
+                            minIndex = auxiliaryIndex;
+                        }
+                    }
+                }
+
+                //查找成功
                 if (minIndex != -1)
                 {
-                    auxiliaryList[minIndex] = 0;
-                    //vertices.Add(Vertices[minIndex]);
+                    //标记找到的顶点
+                    vertices.Add(new MinSpanTreeByPRIMModel<T>()
+                    {
+                        Vertice = Vertices[minIndex],
+                        Weight = auxiliaryList[minIndex].Weight,
+                    });
+                    auxiliaryList[minIndex].Weight = 0;
 
+                    //根据该顶点，更新辅助数组中所有大于该顶点权值
                     for (int j = 0; j < VerticesCount; j++)
                     {
-                        if (AdjacencyMatrix[minIndex, j] < auxiliaryList[j])
+                        if (AdjacencyMatrix[minIndex, j] != 0 && AdjacencyMatrix[minIndex, j] < auxiliaryList[j].Weight)
                         {
-                            auxiliaryList[j] = AdjacencyMatrix[minIndex, j];
+                            auxiliaryList[j].Vertice = Vertices[minIndex];
+                            auxiliaryList[j].Weight = AdjacencyMatrix[minIndex, j];
                         }
                     }
                 }
             }
 
-            //return vertices;
-            return null;
+            return vertices;
+        }
+
+        /// <summary>
+        /// 最小生成树-普里姆算法-辅助模型
+        /// </summary>
+        public class MinSpanTreeByPRIMModel<T>
+        {
+            /// <summary>
+            /// 顶点
+            /// </summary>
+            public T Vertice { get; set; }
+
+            /// <summary>
+            /// 权值
+            /// </summary>
+            public long Weight { get; set; }
+
+
         }
         #endregion
 
@@ -440,7 +489,7 @@ namespace DataStructures.Graphs
                     k = stack.Pop();
                     A(i, k, paths, stack, statck2);
                 }
-            } 
+            }
         }
         #endregion
     }
