@@ -66,14 +66,23 @@ namespace Algorithms.Test.Sorting
 
             AssertList(actualList);
         }
-        #endregion
 
-        #region 希尔排序
         [Fact]
-        public void ShellSort()
+        public void InsertionSortByHalf()
         {
             var actualList = JsonConvert.DeserializeObject<List<int>>(JsonConvert.SerializeObject(ActualList));
-            ShellSorter.Sort(actualList);
+            actualList.Insert(0, 0);
+            InsertionSorter.InsertionSortByHalf(actualList);
+            actualList.RemoveAt(0);
+
+            AssertList(actualList);
+        }
+
+        [Fact]
+        public void InsertionSortByShell()
+        {
+            var actualList = JsonConvert.DeserializeObject<List<int>>(JsonConvert.SerializeObject(ActualList));
+            InsertionSorter.InsertionSortByShell(actualList);
 
             AssertList(actualList);
         }
